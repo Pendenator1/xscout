@@ -1,0 +1,27 @@
+services:
+  - type: worker
+    name: xscout-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python xscout.py
+    envVars:
+      - key: TWITTER_BEARER_TOKEN
+        sync: false
+      - key: TWITTER_API_KEY
+        sync: false
+      - key: TWITTER_API_SECRET
+        sync: false
+      - key: TWITTER_ACCESS_TOKEN
+        sync: false
+      - key: TWITTER_ACCESS_SECRET
+        sync: false
+      - key: CALLMEBOT_PHONE
+        sync: false
+      - key: CALLMEBOT_APIKEY
+        sync: false
+      - key: AUTO_REPLY
+        value: true
+      - key: PORTFOLIO_URL
+        value: https://ecstasy-geospatial.vercel.app/projects
+      - key: KEYWORDS
+        value: need a website,looking for web developer,hire web developer,need web designer,looking for frontend developer,hire frontend developer,need fullstack developer,looking for fullstack developer,website developer needed,web designer needed,need someone to build a website,looking for website designer,hire website developer

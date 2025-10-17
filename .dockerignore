@@ -1,0 +1,10 @@
+.env
+.env.example
+*.bat
+*.vbs
+__pycache__
+*.pyc
+.git
+.gitignore
+README.md
+WHATSAPP_SETUP.md
