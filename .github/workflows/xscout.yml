@@ -36,5 +36,5 @@ jobs:
         AUTO_REPLY: ${{ secrets.AUTO_REPLY }}
         PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
         KEYWORDS: ${{ secrets.KEYWORDS }}
-      run: python xscout_single_run.py
-      timeout-minutes: 5
+      run: timeout 180 python xscout_single_run.py || true
+      timeout-minutes: 4

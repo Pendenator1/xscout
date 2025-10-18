@@ -105,6 +105,7 @@ class XScoutSingleRun:
             end_time = datetime.now()
             start_time = end_time - timedelta(minutes=15)
             
+            print(f"[*] Querying Twitter API...")
             tweets = self.client.search_recent_tweets(
                 query=query,
                 max_results=10,
@@ -113,6 +114,7 @@ class XScoutSingleRun:
                 expansions=['author_id'],
                 user_fields=['username', 'name']
             )
+            print(f"[+] Twitter API query completed")
             
             if not tweets.data:
                 print("[i] No new tweets found in the last 15 minutes.")

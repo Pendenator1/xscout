@@ -41,9 +41,8 @@ jobs:
         AUTO_REPLY: ${{ secrets.AUTO_REPLY }}
         PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
         KEYWORDS: ${{ secrets.KEYWORDS }}
-      run: python xscout_single_run.py
-      continue-on-error: true
-      timeout-minutes: 5
+      run: timeout 180 python xscout_single_run.py || true
+      timeout-minutes: 4
     
     - name: Run TikTok Scout
       env:
