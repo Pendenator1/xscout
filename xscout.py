@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime
 
-load_dotenv()
+load_dotenv(override=True)
 
 class XScout:
     def __init__(self):
