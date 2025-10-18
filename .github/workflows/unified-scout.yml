@@ -1,0 +1,78 @@
+name: Unified Scout (All Platforms)
+
+on:
+  schedule:
+    # Runs every hour
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  search-all-platforms:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install Playwright browsers
+      run: |
+        playwright install chromium
+        playwright install-deps
+    
+    - name: Run Twitter Scout
+      env:
+        TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+        TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+        TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+        TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+        TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+        CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+        CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        AUTO_REPLY: ${{ secrets.AUTO_REPLY }}
+        PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
+        KEYWORDS: ${{ secrets.KEYWORDS }}
+      run: python xscout_single_run.py
+      continue-on-error: true
+      timeout-minutes: 5
+    
+    - name: Run TikTok Scout
+      env:
+        CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+        CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
+        KEYWORDS: ${{ secrets.KEYWORDS }}
+      run: python tiktok_scout.py
+      continue-on-error: true
+      timeout-minutes: 10
+    
+    - name: Run Facebook Scout
+      if: ${{ secrets.FACEBOOK_EMAIL != '' && secrets.FACEBOOK_PASSWORD != '' }}
+      env:
+        CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+        CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
+        KEYWORDS: ${{ secrets.KEYWORDS }}
+        FACEBOOK_EMAIL: ${{ secrets.FACEBOOK_EMAIL }}
+        FACEBOOK_PASSWORD: ${{ secrets.FACEBOOK_PASSWORD }}
+      run: python facebook_scout_cloud.py
+      continue-on-error: true
+      timeout-minutes: 15
+    
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: scout-logs
+        path: |
+          *.log
+        retention-days: 7

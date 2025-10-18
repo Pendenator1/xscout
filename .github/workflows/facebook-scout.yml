@@ -1,0 +1,63 @@
+name: Facebook Scout
+
+on:
+  schedule:
+    # Runs every 2 hours (less frequent due to login complexity)
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  search-facebook:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install Playwright browsers
+      run: |
+        playwright install chromium
+        playwright install-deps
+    
+    - name: Restore Facebook session
+      if: ${{ secrets.FACEBOOK_SESSION != '' }}
+      run: |
+        echo '${{ secrets.FACEBOOK_SESSION }}' > facebook_session.json
+    
+    - name: Run Facebook Scout
+      env:
+        CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+        CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
+        KEYWORDS: ${{ secrets.KEYWORDS }}
+        FACEBOOK_EMAIL: ${{ secrets.FACEBOOK_EMAIL }}
+        FACEBOOK_PASSWORD: ${{ secrets.FACEBOOK_PASSWORD }}
+      run: python facebook_scout_cloud.py
+      timeout-minutes: 15
+    
+    - name: Save Facebook session
+      if: success()
+      run: |
+        if [ -f facebook_session.json ]; then
+          echo "::warning::Facebook session updated. Please update FACEBOOK_SESSION secret manually."
+          cat facebook_session.json
+        fi
+    
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: facebook-logs
+        path: |
+          *.log
+        retention-days: 7
