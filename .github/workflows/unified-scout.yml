@@ -56,7 +56,6 @@ jobs:
       timeout-minutes: 10
     
     - name: Run Facebook Scout
-      if: ${{ secrets.FACEBOOK_EMAIL != '' && secrets.FACEBOOK_PASSWORD != '' }}
       env:
         CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
         CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
