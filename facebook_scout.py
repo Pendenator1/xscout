@@ -26,13 +26,10 @@ class FacebookScout:
         # Session file to persist login
         self.session_file = 'facebook_session.json'
         
-        # Search queries
-        self.search_queries = [
-            'need a website',
-            'looking for web developer',
-            'hire developer',
-            'need developer'
-        ]
+        # Use all keywords from .env as search queries
+        self.search_queries = [kw.strip() for kw in self.keywords if kw.strip()]
+        
+        print(f"[*] Loaded {len(self.search_queries)} search queries from keywords")
     
     def send_whatsapp_notification(self, post_info, platform="Facebook"):
         if not self.callmebot_phone or not self.callmebot_apikey:
@@ -135,9 +132,9 @@ class FacebookScout:
                 
                 print("[+] Logged into Facebook")
                 
-                # Search for keywords
-                for query in self.search_queries[:2]:  # Limit searches
-                    print(f"\n[*] Searching for: {query}")
+                # Search for all keywords
+                for idx, query in enumerate(self.search_queries, 1):
+                    print(f"\n[*] Query {idx}/{len(self.search_queries)}: Searching for: {query}")
                     
                     search_url = f"https://www.facebook.com/search/posts/?q={query.replace(' ', '%20')}"
                     
@@ -169,7 +166,11 @@ class FacebookScout:
                     except Exception as e:
                         print(f"[X] Error searching Facebook: {e}")
                     
-                    await asyncio.sleep(3)  # Delay between searches
+                    # Delay between searches (longer delays to avoid rate limits)
+                    if idx < len(self.search_queries):
+                        delay = 4 if idx < 5 else 6
+                        print(f"[*] Waiting {delay}s before next search...")
+                        await asyncio.sleep(delay)
                 
                 await browser.close()
                 

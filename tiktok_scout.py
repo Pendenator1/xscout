@@ -19,13 +19,10 @@ class TikTokScout:
         self.portfolio_url = os.getenv('PORTFOLIO_URL', '')
         self.keywords = os.getenv('KEYWORDS', '').split(',')
         
-        # TikTok search queries
-        self.search_queries = [
-            'need a website',
-            'looking for web developer',
-            'hire web developer',
-            'need web designer'
-        ]
+        # Use all keywords from .env as search queries
+        self.search_queries = [kw.strip() for kw in self.keywords if kw.strip()]
+        
+        print(f"[*] Loaded {len(self.search_queries)} search queries from keywords")
     
     def send_whatsapp_notification(self, video_info, platform="TikTok"):
         if not self.callmebot_phone or not self.callmebot_apikey:
@@ -201,11 +198,18 @@ class TikTokScout:
     async def run_search(self):
         """Run search for all queries"""
         print(f"\n[*] TikTok Scout Started at {datetime.now()}")
-        print(f"[*] Searching {len(self.search_queries)} queries")
+        print(f"[*] Will search {len(self.search_queries)} queries")
         
-        for query in self.search_queries[:2]:  # Limit to first 2 queries to avoid rate limits
+        # Search all queries with delays to avoid rate limits
+        for idx, query in enumerate(self.search_queries, 1):
+            print(f"\n[*] Query {idx}/{len(self.search_queries)}: {query}")
             await self.search_tiktok_videos(query)
-            await asyncio.sleep(2)  # Delay between searches
+            
+            # Delay between searches (increase delay as we go to avoid rate limits)
+            if idx < len(self.search_queries):
+                delay = 3 if idx < 5 else 5  # Longer delays after 5 queries
+                print(f"[*] Waiting {delay}s before next search...")
+                await asyncio.sleep(delay)
         
         print(f"\n[*] TikTok Scout Completed at {datetime.now()}")
 
