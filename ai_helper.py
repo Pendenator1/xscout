@@ -25,11 +25,11 @@ class AIHelper:
     
     def score_lead(self, tweet_text: str, author_username: str) -> Dict:
         """
-        Score a tweet as a potential lead (0-10)
-        Returns: {score: int, reason: str, is_quality: bool}
+        Score a tweet as a potential lead (0-10) and detect urgency
+        Returns: {score: int, reason: str, is_quality: bool, urgency: str, urgency_level: int}
         """
         if not self.enabled:
-            return {"score": 5, "reason": "AI disabled", "is_quality": True}
+            return {"score": 5, "reason": "AI disabled", "is_quality": True, "urgency": "medium", "urgency_level": 2}
         
         try:
             prompt = f"""Analyze this tweet to determine if it's a quality lead for a web developer/designer.
@@ -51,23 +51,32 @@ Rate from 0-10 where:
 - 1-3: Poor lead, might be spam or irrelevant
 - 0: NOT A CLIENT (developer/competitor, spam, or irrelevant)
 
+ALSO detect URGENCY level (1-3):
+- 3 (HIGH): "ASAP", "urgent", "immediately", "right now", "need now", "emergency", "quick", "fast"
+- 2 (MEDIUM): "soon", "this week", "need help", "looking for"
+- 1 (LOW): "eventually", "considering", "thinking about", "might need"
+
 Respond ONLY in this JSON format:
-{{"score": <number>, "reason": "<brief explanation>"}}"""
+{{"score": <number>, "reason": "<brief explanation>", "urgency": "<high/medium/low>", "urgency_level": <1-3>}}"""
 
             response = self.model.generate_content(prompt)
             result = json.loads(response.text.strip().replace('```json', '').replace('```', ''))
             
             score = int(result.get('score', 5))
             reason = result.get('reason', 'No reason provided')
+            urgency = result.get('urgency', 'medium').lower()
+            urgency_level = int(result.get('urgency_level', 2))
             
             return {
                 "score": score,
                 "reason": reason,
-                "is_quality": score >= int(os.getenv('AI_MIN_LEAD_SCORE', '7'))
+                "is_quality": score >= int(os.getenv('AI_MIN_LEAD_SCORE', '7')),
+                "urgency": urgency,
+                "urgency_level": urgency_level
             }
         except Exception as e:
             print(f"[X] AI scoring error: {e}")
-            return {"score": 5, "reason": f"Error: {e}", "is_quality": True}
+            return {"score": 5, "reason": f"Error: {e}", "is_quality": True, "urgency": "medium", "urgency_level": 2}
     
     def generate_reply(self, tweet_text: str, author_username: str, portfolio_url: str) -> Optional[str]:
         """

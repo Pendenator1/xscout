@@ -20,6 +20,7 @@ class XScout:
         self.callmebot_apikey = os.getenv('CALLMEBOT_APIKEY')
         
         self.auto_reply = os.getenv('AUTO_REPLY', 'true').lower() == 'true'
+        self.auto_like = os.getenv('AUTO_LIKE', 'true').lower() == 'true'
         self.portfolio_url = os.getenv('PORTFOLIO_URL', '')
         
         self.keywords = os.getenv('KEYWORDS', '').split(',')
@@ -87,6 +88,11 @@ class XScout:
         else:
             print("[i] Auto-reply is DISABLED")
         
+        if self.auto_like:
+            print("[+] Auto-like is ENABLED (will like tweets before replying)")
+        else:
+            print("[i] Auto-like is DISABLED")
+        
         if self.callmebot_phone and self.callmebot_apikey:
             print(f"[+] WhatsApp notifications enabled for {self.callmebot_phone}")
         else:
@@ -99,12 +105,16 @@ class XScout:
         
         print()
     
-    def send_whatsapp_notification(self, tweet_text, tweet_url, author):
+    def send_whatsapp_notification(self, tweet_text, tweet_url, author, urgency="medium"):
         if not self.callmebot_phone or not self.callmebot_apikey:
             print("WhatsApp not configured. Skipping notification.")
             return
         
-        message = f"[!] New Lead Found!\n\n"
+        # Urgency emoji indicators
+        urgency_emoji = {"high": "🔥", "medium": "⚡", "low": "📌"}
+        emoji = urgency_emoji.get(urgency.lower(), "⚡")
+        
+        message = f"{emoji} New Lead Found! [{urgency.upper()}]\n\n"
         message += f"Author: @{author}\n"
         message += f"Tweet: {tweet_text[:200]}...\n\n"
         message += f"View: {tweet_url}\n\n"
@@ -165,6 +175,19 @@ class XScout:
         if not reply_text:
             reply_text = f"Hi! I'm a web developer specializing in frontend and fullstack development. Check out my portfolio: {self.portfolio_url}\n\nI'd love to discuss your project!"
             print(f"[*] Using template reply")
+        
+        # Auto-like before replying (increases engagement)
+        if self.auto_like:
+            try:
+                self.client.like(tweet_id)
+                print(f"[+] ❤️ Liked tweet by @{username}")
+            except tweepy.errors.Forbidden as e:
+                if "already" in str(e).lower():
+                    print(f"[i] Already liked tweet by @{username}")
+                else:
+                    print(f"[!] Could not like tweet: {e}")
+            except Exception as e:
+                print(f"[!] Error liking tweet: {e}")
         
         print(f"[*] Attempting to post reply to tweet {tweet_id}...")
         try:
@@ -232,10 +255,17 @@ class XScout:
                 print(f"   {tweet.text[:100]}...")
                 print(f"   {tweet_url}")
                 
+                urgency = "medium"  # Default urgency
+                
                 if self.ai_enabled and self.ai_helper and self.ai_helper.enabled:
                     print(f"[*] AI analyzing lead quality...")
                     lead_score = self.ai_helper.score_lead(tweet.text, username)
-                    print(f"[AI] Score: {lead_score['score']}/10 - {lead_score['reason']}")
+                    urgency = lead_score.get('urgency', 'medium')
+                    urgency_emoji = {"high": "🔥", "medium": "⚡", "low": "📌"}
+                    emoji = urgency_emoji.get(urgency.lower(), "⚡")
+                    
+                    print(f"[AI] Score: {lead_score['score']}/10 | Urgency: {emoji} {urgency.upper()}")
+                    print(f"[AI] {lead_score['reason']}")
                     
                     if not lead_score['is_quality']:
                         print(f"[i] Skipping low-quality lead (score: {lead_score['score']} < {self.min_lead_score})")
@@ -243,7 +273,7 @@ class XScout:
                     else:
                         print(f"[+] Quality lead detected!")
                 
-                self.send_whatsapp_notification(tweet.text, tweet_url, username)
+                self.send_whatsapp_notification(tweet.text, tweet_url, username, urgency)
                 self.send_auto_reply(tweet.id, username, tweet.text)
         
         except tweepy.errors.TweepyException as e:
