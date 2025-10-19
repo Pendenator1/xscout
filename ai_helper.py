@@ -26,10 +26,10 @@ class AIHelper:
     def score_lead(self, tweet_text: str, author_username: str) -> Dict:
         """
         Score a tweet as a potential lead (0-10) and detect urgency
-        Returns: {score: int, reason: str, is_quality: bool, urgency: str, urgency_level: int}
+        Returns: {score: int, reason: str, urgency: str, urgency_level: int}
         """
         if not self.enabled:
-            return {"score": 5, "reason": "AI disabled", "is_quality": True, "urgency": "medium", "urgency_level": 2}
+            return {"score": 5, "reason": "AI disabled", "urgency": "medium", "urgency_level": 2}
         
         try:
             prompt = f"""Analyze this tweet to determine if it's a quality lead for a web developer/designer.
@@ -70,13 +70,12 @@ Respond ONLY in this JSON format:
             return {
                 "score": score,
                 "reason": reason,
-                "is_quality": score >= int(os.getenv('AI_MIN_LEAD_SCORE', '7')),
                 "urgency": urgency,
                 "urgency_level": urgency_level
             }
         except Exception as e:
             print(f"[X] AI scoring error: {e}")
-            return {"score": 5, "reason": f"Error: {e}", "is_quality": True, "urgency": "medium", "urgency_level": 2}
+            return {"score": 5, "reason": f"Error: {e}", "urgency": "medium", "urgency_level": 2}
     
     def generate_reply(self, tweet_text: str, author_username: str, portfolio_url: str) -> Optional[str]:
         """

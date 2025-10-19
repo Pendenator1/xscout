@@ -28,7 +28,6 @@ class XScout:
         
         self.ai_enabled = os.getenv('ENABLE_AI_FEATURES', 'false').lower() == 'true'
         self.ai_helper = AIHelper(os.getenv('GEMINI_API_KEY', '')) if self.ai_enabled else None
-        self.min_lead_score = int(os.getenv('AI_MIN_LEAD_SCORE', '7'))
         
         self.client = tweepy.Client(
             bearer_token=self.bearer_token,
@@ -100,13 +99,13 @@ class XScout:
             print("[i] WhatsApp notifications not configured")
         
         if self.ai_enabled and self.ai_helper and self.ai_helper.enabled:
-            print(f"[+] AI Features enabled (min lead score: {self.min_lead_score}/10)")
+            print(f"[+] AI Features enabled (all leads notified, scores shown for info)")
         else:
             print("[i] AI Features disabled")
         
         print()
     
-    def send_whatsapp_notification(self, tweet_text, tweet_url, author, urgency="medium"):
+    def send_whatsapp_notification(self, tweet_text, tweet_url, author, urgency="medium", score=None):
         if not self.callmebot_phone or not self.callmebot_apikey:
             print("WhatsApp not configured. Skipping notification.")
             return
@@ -116,6 +115,8 @@ class XScout:
         emoji = urgency_emoji.get(urgency.lower(), "⚡")
         
         message = f"{emoji} New Lead Found! [{urgency.upper()}]\n\n"
+        if score is not None:
+            message += f"AI Score: {score}/10\n"
         message += f"Author: @{author}\n"
         message += f"Tweet: {tweet_text[:200]}...\n\n"
         message += f"View: {tweet_url}\n\n"
@@ -257,24 +258,21 @@ class XScout:
                 print(f"   {tweet_url}")
                 
                 urgency = "medium"  # Default urgency
+                score = None  # AI score (if available)
                 
                 if self.ai_enabled and self.ai_helper and self.ai_helper.enabled:
                     print(f"[*] AI analyzing lead quality...")
                     lead_score = self.ai_helper.score_lead(tweet.text, username)
                     urgency = lead_score.get('urgency', 'medium')
+                    score = lead_score.get('score')
                     urgency_emoji = {"high": "🔥", "medium": "⚡", "low": "📌"}
                     emoji = urgency_emoji.get(urgency.lower(), "⚡")
                     
-                    print(f"[AI] Score: {lead_score['score']}/10 | Urgency: {emoji} {urgency.upper()}")
+                    print(f"[AI] Score: {score}/10 | Urgency: {emoji} {urgency.upper()}")
                     print(f"[AI] {lead_score['reason']}")
-                    
-                    if not lead_score['is_quality']:
-                        print(f"[i] Skipping low-quality lead (score: {lead_score['score']} < {self.min_lead_score})")
-                        continue
-                    else:
-                        print(f"[+] Quality lead detected!")
                 
-                self.send_whatsapp_notification(tweet.text, tweet_url, username, urgency)
+                # Send notification for ALL leads (no filtering)
+                self.send_whatsapp_notification(tweet.text, tweet_url, username, urgency, score)
                 self.send_auto_reply(tweet.id, username, tweet.text)
         
         except tweepy.errors.TweepyException as e:
