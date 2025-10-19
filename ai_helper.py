@@ -71,29 +71,40 @@ Respond ONLY in this JSON format:
     
     def generate_reply(self, tweet_text: str, author_username: str, portfolio_url: str) -> Optional[str]:
         """
-        Generate a personalized reply based on the tweet content
+        Generate a personalized DM based on the client's business and needs
         """
         if not self.enabled:
             return None
         
         try:
-            prompt = f"""You are a professional web developer responding to a potential client.
+            prompt = f"""You are a professional web developer reaching out to a potential client who needs a website.
 
 Their tweet: "{tweet_text}"
 Their username: @{author_username}
-Your portfolio: {portfolio_url}
 
-Write a short, personalized reply (max 280 characters) that:
-1. References something specific from their tweet
-2. Briefly mentions your relevant skills
-3. Includes the portfolio link naturally
-4. Sounds professional but friendly
-5. Invites them to discuss further
+Your task: Write a personalized reply that:
+1. ANALYZE their business/industry from the tweet
+2. Mention 2-3 SPECIFIC BENEFITS a website would bring to THEIR type of business
+   Examples:
+   - For restaurants: "online ordering", "menu visibility", "reservations"
+   - For coaches/consultants: "credibility", "client bookings", "showcase testimonials"
+   - For e-commerce: "24/7 sales", "wider reach", "payment integration"
+   - For local services: "local SEO", "customer reviews", "contact forms"
+   - For professionals: "portfolio showcase", "lead generation", "brand authority"
+3. Be conversational and genuine (not salesy)
+4. Include the portfolio link: {portfolio_url}
+5. End with a call to action like "DM me" or "Let's chat"
+6. Keep it under 280 characters
+
+IMPORTANT: Focus on THEIR BUSINESS VALUE, not your skills. Make them see why they NEED a website.
 
 Reply:"""
 
             response = self.model.generate_content(prompt)
             reply = response.text.strip()
+            
+            # Remove any quotes that might be added
+            reply = reply.strip('"').strip("'")
             
             if len(reply) > 280:
                 reply = reply[:277] + "..."
@@ -101,6 +112,51 @@ Reply:"""
             return reply
         except Exception as e:
             print(f"[X] AI reply generation error: {e}")
+            return None
+    
+    def generate_dm(self, tweet_text: str, author_username: str, portfolio_url: str) -> Optional[str]:
+        """
+        Generate a longer, personalized DM for direct messaging (not limited to 280 chars)
+        """
+        if not self.enabled:
+            return None
+        
+        try:
+            prompt = f"""You are a professional web developer reaching out to a potential client who needs a website.
+
+Their tweet: "{tweet_text}"
+Their username: @{author_username}
+
+Write a personalized direct message (300-500 characters) that:
+
+1. IDENTIFY their business type from the tweet
+2. Start with a friendly greeting and reference their specific need
+3. Explain 3-4 CONCRETE BENEFITS a professional website would bring to their business:
+   - Increased visibility/reach
+   - Credibility and trust
+   - Revenue/growth opportunities
+   - Time-saving automation
+   - Customer convenience
+   Make these benefits specific to THEIR industry!
+
+4. Briefly mention your expertise (1 sentence)
+5. Include portfolio: {portfolio_url}
+6. End with clear call to action
+
+TONE: Friendly, consultative (like a helpful advisor), not pushy or salesy.
+GOAL: Make them realize the VALUE and ROI of having a website for their specific business.
+
+Direct Message:"""
+
+            response = self.model.generate_content(prompt)
+            dm = response.text.strip()
+            
+            # Remove any quotes
+            dm = dm.strip('"').strip("'")
+            
+            return dm
+        except Exception as e:
+            print(f"[X] AI DM generation error: {e}")
             return None
     
     def expand_keywords(self, base_keywords: List[str], count: int = 10) -> List[str]:

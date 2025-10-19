@@ -107,7 +107,17 @@ class XScout:
         message = f"[!] New Lead Found!\n\n"
         message += f"Author: @{author}\n"
         message += f"Tweet: {tweet_text[:200]}...\n\n"
-        message += f"View: {tweet_url}"
+        message += f"View: {tweet_url}\n\n"
+        
+        # Generate personalized DM if AI is enabled
+        if self.ai_enabled and self.ai_helper and self.ai_helper.enabled:
+            print(f"[*] Generating personalized DM for @{author}...")
+            dm_message = self.ai_helper.generate_dm(tweet_text, author, self.portfolio_url)
+            if dm_message:
+                message += f"--- SUGGESTED DM ---\n{dm_message}\n\n"
+                print(f"[+] AI generated personalized DM")
+            else:
+                print(f"[!] AI DM generation failed, sending basic notification")
         
         try:
             url = "https://api.callmebot.com/whatsapp.php"
