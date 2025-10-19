@@ -77,26 +77,18 @@ Respond ONLY in this JSON format:
             return None
         
         try:
-            prompt = f"""You are a professional web developer reaching out to a potential client who needs a website.
+            prompt = f"""You are a professional web developer reaching out to a potential client.
 
 Their tweet: "{tweet_text}"
 Their username: @{author_username}
 
-Your task: Write a personalized reply that:
-1. ANALYZE their business/industry from the tweet
-2. Mention 2-3 SPECIFIC BENEFITS a website would bring to THEIR type of business
-   Examples:
-   - For restaurants: "online ordering", "menu visibility", "reservations"
-   - For coaches/consultants: "credibility", "client bookings", "showcase testimonials"
-   - For e-commerce: "24/7 sales", "wider reach", "payment integration"
-   - For local services: "local SEO", "customer reviews", "contact forms"
-   - For professionals: "portfolio showcase", "lead generation", "brand authority"
-3. Be conversational and genuine (not salesy)
-4. Include the portfolio link: {portfolio_url}
-5. End with a call to action like "DM me" or "Let's chat"
-6. Keep it under 280 characters
+Write a SHORT, friendly reply (max 200 characters) that:
+1. References their specific need from the tweet
+2. Mentions 1-2 key benefits a website would bring to their business type
+3. Include: {portfolio_url}
+4. End with "DM me if interested"
 
-IMPORTANT: Focus on THEIR BUSINESS VALUE, not your skills. Make them see why they NEED a website.
+Keep it brief, friendly, and focused on THEIR benefit, not your skills.
 
 Reply:"""
 
@@ -116,37 +108,29 @@ Reply:"""
     
     def generate_dm(self, tweet_text: str, author_username: str, portfolio_url: str) -> Optional[str]:
         """
-        Generate a longer, personalized DM for direct messaging (not limited to 280 chars)
+        Generate a short, personalized DM for direct messaging
         """
         if not self.enabled:
             return None
         
         try:
-            prompt = f"""You are a professional web developer reaching out to a potential client who needs a website.
+            prompt = f"""You are a professional web developer reaching out to a potential client.
 
 Their tweet: "{tweet_text}"
 Their username: @{author_username}
 
-Write a personalized direct message (300-500 characters) that:
+Write a SHORT, personalized message (150-200 characters max):
 
-1. IDENTIFY their business type from the tweet
-2. Start with a friendly greeting and reference their specific need
-3. Explain 3-4 CONCRETE BENEFITS a professional website would bring to their business:
-   - Increased visibility/reach
-   - Credibility and trust
-   - Revenue/growth opportunities
-   - Time-saving automation
-   - Customer convenience
-   Make these benefits specific to THEIR industry!
+1. Quick friendly greeting
+2. Reference their specific need from tweet
+3. Mention 2 KEY BENEFITS a website brings to their business type
+4. Add: {portfolio_url}
+5. Simple CTA: "Let me know if you'd like to discuss!"
 
-4. Briefly mention your expertise (1 sentence)
-5. Include portfolio: {portfolio_url}
-6. End with clear call to action
+CRITICAL: Keep it BRIEF, CASUAL, and FRIENDLY. Like texting a friend, not writing a business proposal.
+Don't be pushy or salesy. Just helpful.
 
-TONE: Friendly, consultative (like a helpful advisor), not pushy or salesy.
-GOAL: Make them realize the VALUE and ROI of having a website for their specific business.
-
-Direct Message:"""
+Message:"""
 
             response = self.model.generate_content(prompt)
             dm = response.text.strip()
