@@ -36,5 +36,8 @@ jobs:
         AUTO_REPLY: ${{ secrets.AUTO_REPLY }}
         PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
         KEYWORDS: ${{ secrets.KEYWORDS }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        ENABLE_AI_FEATURES: ${{ secrets.ENABLE_AI_FEATURES }}
+        AI_MIN_LEAD_SCORE: ${{ secrets.AI_MIN_LEAD_SCORE }}
       run: timeout 180 python xscout_single_run.py || true
       timeout-minutes: 4
