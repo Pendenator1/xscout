@@ -34,10 +34,11 @@ jobs:
         CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
         CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
         AUTO_REPLY: ${{ secrets.AUTO_REPLY }}
+        AUTO_LIKE: ${{ secrets.AUTO_LIKE }}
         PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
         KEYWORDS: ${{ secrets.KEYWORDS }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         ENABLE_AI_FEATURES: ${{ secrets.ENABLE_AI_FEATURES }}
         AI_MIN_LEAD_SCORE: ${{ secrets.AI_MIN_LEAD_SCORE }}
-      run: timeout 180 python xscout_single_run.py || true
+      run: timeout 180 python xscout.py --single-run || true
       timeout-minutes: 4

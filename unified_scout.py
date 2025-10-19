@@ -9,16 +9,16 @@ class UnifiedScout:
         self.twitter_scout = XScout()
     
     def run_all_platforms(self):
-        """Run Twitter scout"""
+        """Run Twitter scout (single search)"""
         print("="*60)
         print("[*] XScout Started")
         print(f"[*] Timestamp: {datetime.now()}")
         print("="*60)
         
-        # Run Twitter
+        # Run Twitter (search last 15 minutes)
         print("\n--- TWITTER SEARCH ---")
         try:
-            self.twitter_scout.search_tweets()
+            self.twitter_scout.search_tweets(time_window_minutes=15)
         except Exception as e:
             print(f"[X] Twitter error: {e}")
         

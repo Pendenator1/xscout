@@ -2,8 +2,9 @@ import tweepy
 import os
 import time
 import requests
+import argparse
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from ai_helper import AIHelper
 
 load_dotenv(override=True)
@@ -211,7 +212,7 @@ class XScout:
         except Exception as e:
             print(f"[X] Unexpected error sending auto-reply: {e}")
     
-    def search_tweets(self):
+    def search_tweets(self, time_window_minutes=60):
         print(f"[*] Searching for {len(self.keywords)} keywords:")
         for i, keyword in enumerate(self.keywords, 1):
             print(f"    {i}. '{keyword.strip()}'")
@@ -222,9 +223,9 @@ class XScout:
         print(f"[*] Search query: {query[:200]}...")  
         
         try:
-            from datetime import timedelta
             end_time = datetime.now()
-            start_time = end_time - timedelta(hours=1)
+            start_time = end_time - timedelta(minutes=time_window_minutes)
+            print(f"[*] Searching tweets from last {time_window_minutes} minutes...")
             
             tweets = self.client.search_recent_tweets(
                 query=query,
@@ -282,6 +283,7 @@ class XScout:
             print(f"[X] Error: {e}")
     
     def run(self, interval=60):
+        """Run continuously with a specified interval"""
         print("[*] XScout Bot Started!")
         print(f"[*] Checking every {interval} seconds...")
         print("Press Ctrl+C to stop\n")
@@ -290,12 +292,30 @@ class XScout:
             while True:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 print(f"\n[{timestamp}] Running search...")
-                self.search_tweets()
+                self.search_tweets(time_window_minutes=60)
                 print(f"[-] Sleeping for {interval} seconds...")
                 time.sleep(interval)
         except KeyboardInterrupt:
             print("\n\n[*] XScout Bot stopped.")
+    
+    def run_once(self):
+        """Run a single search (for GitHub Actions)"""
+        print(f"[*] XScout Single Run Started at {datetime.now()}")
+        self.search_tweets(time_window_minutes=15)
+        print(f"[*] XScout Single Run Completed at {datetime.now()}")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='XScout - Twitter Lead Finder')
+    parser.add_argument('--single-run', action='store_true', 
+                        help='Run once and exit (for GitHub Actions)')
+    parser.add_argument('--interval', type=int, default=300,
+                        help='Check interval in seconds for continuous mode (default: 300)')
+    
+    args = parser.parse_args()
+    
     bot = XScout()
-    bot.run(interval=300)
+    
+    if args.single_run:
+        bot.run_once()
+    else:
+        bot.run(interval=args.interval)
