@@ -4,6 +4,7 @@ import time
 import requests
 from dotenv import load_dotenv
 from datetime import datetime
+from ai_helper import AIHelper
 
 load_dotenv(override=True)
 
@@ -22,6 +23,10 @@ class XScout:
         self.portfolio_url = os.getenv('PORTFOLIO_URL', '')
         
         self.keywords = os.getenv('KEYWORDS', '').split(',')
+        
+        self.ai_enabled = os.getenv('ENABLE_AI_FEATURES', 'false').lower() == 'true'
+        self.ai_helper = AIHelper(os.getenv('GEMINI_API_KEY', '')) if self.ai_enabled else None
+        self.min_lead_score = int(os.getenv('AI_MIN_LEAD_SCORE', '7'))
         
         self.client = tweepy.Client(
             bearer_token=self.bearer_token,
@@ -87,6 +92,11 @@ class XScout:
         else:
             print("[i] WhatsApp notifications not configured")
         
+        if self.ai_enabled and self.ai_helper and self.ai_helper.enabled:
+            print(f"[+] AI Features enabled (min lead score: {self.min_lead_score}/10)")
+        else:
+            print("[i] AI Features disabled")
+        
         print()
     
     def send_whatsapp_notification(self, tweet_text, tweet_url, author):
@@ -116,7 +126,7 @@ class XScout:
         except Exception as e:
             print(f"[X] Error sending WhatsApp notification: {e}")
     
-    def send_auto_reply(self, tweet_id, username):
+    def send_auto_reply(self, tweet_id, username, tweet_text=''):
         if not self.auto_reply:
             print(f"[i] Auto-reply disabled. Skipping reply to @{username}")
             return
@@ -125,7 +135,15 @@ class XScout:
             print(f"[!] Portfolio URL not configured. Skipping reply to @{username}")
             return
         
-        reply_text = f"Hi! I'm a web developer specializing in frontend and fullstack development. Check out my portfolio: {self.portfolio_url}\n\nI'd love to discuss your project!"
+        reply_text = None
+        if self.ai_enabled and self.ai_helper and self.ai_helper.enabled and tweet_text:
+            print(f"[*] Generating AI reply for @{username}...")
+            reply_text = self.ai_helper.generate_reply(tweet_text, username, self.portfolio_url)
+            if reply_text:
+                print(f"[+] AI generated personalized reply")
+        
+        if not reply_text:
+            reply_text = f"Hi! I'm a web developer specializing in frontend and fullstack development. Check out my portfolio: {self.portfolio_url}\n\nI'd love to discuss your project!"
         
         try:
             self.client.create_tweet(
@@ -149,10 +167,13 @@ class XScout:
             print(f"[X] Unexpected error sending auto-reply: {e}")
     
     def search_tweets(self):
-        print(f"[*] Searching for keywords: {', '.join(self.keywords)}")
+        print(f"[*] Searching for {len(self.keywords)} keywords:")
+        for i, keyword in enumerate(self.keywords, 1):
+            print(f"    {i}. '{keyword.strip()}'")
         
         query = ' OR '.join([f'"{keyword.strip()}"' for keyword in self.keywords])
         query += ' -is:retweet lang:en'
+        print(f"[*] Search query: {query[:200]}...")  
         
         try:
             from datetime import timedelta
@@ -188,8 +209,19 @@ class XScout:
                 print(f"   {tweet.text[:100]}...")
                 print(f"   {tweet_url}")
                 
+                if self.ai_enabled and self.ai_helper and self.ai_helper.enabled:
+                    print(f"[*] AI analyzing lead quality...")
+                    lead_score = self.ai_helper.score_lead(tweet.text, username)
+                    print(f"[AI] Score: {lead_score['score']}/10 - {lead_score['reason']}")
+                    
+                    if not lead_score['is_quality']:
+                        print(f"[i] Skipping low-quality lead (score: {lead_score['score']} < {self.min_lead_score})")
+                        continue
+                    else:
+                        print(f"[+] Quality lead detected!")
+                
                 self.send_whatsapp_notification(tweet.text, tweet_url, username)
-                self.send_auto_reply(tweet.id, username)
+                self.send_auto_reply(tweet.id, username, tweet.text)
         
         except tweepy.errors.TweepyException as e:
             print(f"[X] Twitter API Error: {e}")
