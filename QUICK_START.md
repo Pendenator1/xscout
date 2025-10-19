@@ -1,6 +1,6 @@
 # XScout Quick Start Guide
 
-Quick reference to get your multi-platform lead finder running.
+Quick reference to get your Twitter lead finder running.
 
 ## 🚀 Quick Setup
 
@@ -8,7 +8,6 @@ Quick reference to get your multi-platform lead finder running.
 
 ```bash
 pip install -r requirements.txt
-playwright install chromium
 ```
 
 ### 2. Configure Environment
@@ -19,7 +18,7 @@ Your `.env` file is already set up with:
 - Keywords
 - Portfolio URL
 
-## 📱 Run Individual Platforms
+## 📱 Run XScout
 
 ### Twitter (Continuous)
 ```bash
@@ -27,28 +26,15 @@ python xscout.py
 ```
 Runs continuously, checks every 5 minutes.
 
-### TikTok (Single Run)
-```bash
-python tiktok_scout.py
-```
-Searches TikTok once, sends notifications.
-
-### Facebook (Single Run - Requires Login)
-```bash
-python facebook_scout.py
-```
-First time: Browser opens, log in manually
-Next times: Uses saved session
-
-### All Platforms (Single Run)
+### Single Run
 ```bash
 python unified_scout.py
 ```
-Runs Twitter → TikTok → Facebook in sequence.
+Runs Twitter search once.
 
 ## ☁️ Deploy to Cloud (FREE)
 
-### GitHub Actions - Twitter Only
+### GitHub Actions - Automated Twitter Monitoring
 
 1. Go to: https://github.com/Pendenator1/xscout/settings/secrets/actions
 2. Add these secrets:
@@ -67,15 +53,13 @@ Runs Twitter → TikTok → Facebook in sequence.
 4. Enable workflows
 5. Done! Runs every 10 minutes automatically
 
-**Note:** TikTok and Facebook require browser automation and work best locally.
-
 ## 🔧 Local Automation (Windows)
 
 ### Option 1: Task Scheduler
 
 1. Open **Task Scheduler**
 2. **Create Basic Task**
-3. Name: "XScout Unified"
+3. Name: "XScout"
 4. Trigger: **Daily** at startup
 5. Repeat: **Every 1 hour**
 6. Action: **Start a program**
@@ -101,9 +85,6 @@ Run this file, it loops every hour.
 | Platform | Frequency | Method |
 |----------|-----------|--------|
 | **Twitter** | Every 10 min | GitHub Actions (cloud) |
-| **TikTok** | Every 30-60 min | Local automation |
-| **Facebook** | Every 1-2 hours | Local automation |
-| **All (Unified)** | Every 1 hour | Local automation |
 
 ## 🔍 What Happens When You Run
 
@@ -111,27 +92,9 @@ Run this file, it loops every hour.
 1. ✅ Validates API credentials
 2. 🔍 Searches last hour of tweets
 3. 📱 Sends WhatsApp notifications
-4. 💬 Auto-replies (if credentials fixed)
+4. 💬 Auto-replies (if enabled)
 5. 😴 Waits 5 minutes
 6. 🔄 Repeats
-
-### TikTok (tiktok_scout.py)
-1. 🌐 Opens browser (headless)
-2. 🔍 Searches 2 keyword queries
-3. 📹 Extracts video info
-4. 📱 Sends WhatsApp notifications
-5. ✅ Completes
-
-### Facebook (facebook_scout.py)
-1. 🌐 Opens browser
-2. 🔐 Loads saved session OR prompts login
-3. 🔍 Searches posts for keywords
-4. 📱 Sends WhatsApp notifications
-5. 💾 Saves session
-6. ✅ Completes
-
-### Unified (unified_scout.py)
-Runs all three in sequence.
 
 ## 🎯 Expected Results
 
@@ -160,20 +123,10 @@ KEYWORDS=need a website,looking for web developer,hire developer,website develop
 
 ## 🆘 Common Issues
 
-### "playwright not found"
-```bash
-pip install playwright
-playwright install chromium
-```
-
 ### "No tweets found"
 - Check Twitter API credentials
 - Verify keywords are realistic
 - Check rate limits
-
-### "Facebook session expired"
-- Delete `facebook_session.json`
-- Run script again to re-login
 
 ### "WhatsApp notifications not working"
 - Verify CallMeBot setup
@@ -184,11 +137,10 @@ playwright install chromium
 
 - **Complete Setup:** `PLATFORM_SETUP_GUIDE.md`
 - **GitHub Actions:** `GITHUB_ACTIONS_SETUP.md`
-- **TikTok/FB Details:** `TIKTOK_FACEBOOK_EXPANSION.md`
 
 ## 🎓 Next Steps
 
-1. ✅ Test each platform individually
+1. ✅ Test Twitter individually
 2. ✅ Verify notifications work
 3. ✅ Adjust keywords based on results
 4. ✅ Set up automation (cloud or local)

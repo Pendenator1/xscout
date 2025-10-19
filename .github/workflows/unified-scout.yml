@@ -1,4 +1,4 @@
-name: Unified Scout (All Platforms)
+name: XScout Twitter Bot
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # Allows manual trigger
 
 jobs:
-  search-all-platforms:
+  search-twitter:
     runs-on: ubuntu-latest
     
     steps:
@@ -24,11 +24,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Install Playwright browsers
-      run: |
-        playwright install chromium
-        playwright install-deps
-    
     - name: Run Twitter Scout
       env:
         TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
@@ -41,30 +36,11 @@ jobs:
         AUTO_REPLY: ${{ secrets.AUTO_REPLY }}
         PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
         KEYWORDS: ${{ secrets.KEYWORDS }}
+        ENABLE_AI_FEATURES: ${{ secrets.ENABLE_AI_FEATURES }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        AI_MIN_LEAD_SCORE: ${{ secrets.AI_MIN_LEAD_SCORE }}
       run: timeout 180 python xscout_single_run.py || true
       timeout-minutes: 4
-    
-    - name: Run TikTok Scout
-      env:
-        CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
-        CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
-        PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
-        KEYWORDS: ${{ secrets.KEYWORDS }}
-      run: python tiktok_scout.py
-      continue-on-error: true
-      timeout-minutes: 10
-    
-    - name: Run Facebook Scout
-      env:
-        CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
-        CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
-        PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL }}
-        KEYWORDS: ${{ secrets.KEYWORDS }}
-        FACEBOOK_EMAIL: ${{ secrets.FACEBOOK_EMAIL }}
-        FACEBOOK_PASSWORD: ${{ secrets.FACEBOOK_PASSWORD }}
-      run: python facebook_scout_cloud.py
-      continue-on-error: true
-      timeout-minutes: 15
     
     - name: Upload logs on failure
       if: failure()
