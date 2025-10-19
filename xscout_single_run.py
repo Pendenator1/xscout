@@ -68,6 +68,11 @@ class XScoutSingleRun:
             print(f"[X] Error sending WhatsApp notification: {e}")
     
     def send_auto_reply(self, tweet_id, username, tweet_text=''):
+        print(f"[*] send_auto_reply called for @{username}")
+        print(f"    AUTO_REPLY={self.auto_reply}")
+        print(f"    PORTFOLIO_URL={self.portfolio_url}")
+        print(f"    AI_ENABLED={self.ai_enabled}")
+        
         if not self.auto_reply:
             print(f"[i] Auto-reply disabled. Skipping reply to @{username}")
             return
@@ -79,21 +84,28 @@ class XScoutSingleRun:
         reply_text = None
         if self.ai_enabled and self.ai_helper and self.ai_helper.enabled and tweet_text:
             print(f"[*] Generating AI reply for @{username}...")
-            reply_text = self.ai_helper.generate_reply(tweet_text, username, self.portfolio_url)
-            if reply_text:
-                print(f"[+] AI generated personalized reply")
+            try:
+                reply_text = self.ai_helper.generate_reply(tweet_text, username, self.portfolio_url)
+                if reply_text:
+                    print(f"[+] AI generated personalized reply: {reply_text[:50]}...")
+                else:
+                    print(f"[!] AI returned empty reply")
+            except Exception as e:
+                print(f"[X] AI reply generation failed: {e}")
         
         if not reply_text:
             reply_text = f"Hi! I'm a web developer specializing in frontend and fullstack development. Check out my portfolio: {self.portfolio_url}\n\nI'd love to discuss your project!"
+            print(f"[*] Using template reply")
         
+        print(f"[*] Attempting to post reply to tweet {tweet_id}...")
         try:
-            self.client.create_tweet(
+            response = self.client.create_tweet(
                 text=reply_text,
                 in_reply_to_tweet_id=tweet_id
             )
-            print(f"[+] Auto-replied to @{username}")
+            print(f"[+] ✅ Auto-replied to @{username} - Tweet ID: {response.data['id']}")
         except tweepy.errors.Unauthorized as e:
-            print(f"[X] Error sending auto-reply: 401 Unauthorized")
+            print(f"[X] ❌ Error sending auto-reply: 401 Unauthorized")
             print(f"    This typically means:")
             print(f"    1. Your Twitter API credentials are invalid or expired")
             print(f"    2. Your app lacks 'Read and Write' permissions")
@@ -114,6 +126,7 @@ class XScoutSingleRun:
         
         query = ' OR '.join([f'"{keyword.strip()}"' for keyword in self.keywords])
         query += ' -is:retweet lang:en'
+        query += ' -"I help" -"I build" -"I offer" -"hire me" -"portfolio" -"check out my"'
         print(f"[*] Search query: {query[:200]}...")
         
         try:

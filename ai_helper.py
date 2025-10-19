@@ -37,12 +37,19 @@ class AIHelper:
 Tweet: "{tweet_text}"
 Author: @{author_username}
 
+CRITICAL: If the author is a developer/designer offering services, score 0! We want CLIENTS, not competitors.
+
+Red flags (score 0-2):
+- "I help", "I build", "I offer", "hire me", "I'm a developer"
+- Portfolio links, service advertisements
+- Other developers promoting themselves
+
 Rate from 0-10 where:
-- 10: Excellent lead with clear intent, budget indicators, or urgency
-- 7-9: Good lead with project details or specific requirements
-- 4-6: Possible lead but vague or uncertain
+- 10: CLIENT with clear intent, budget indicators, or urgency
+- 7-9: CLIENT with project details or specific requirements
+- 4-6: Possible CLIENT but vague or uncertain
 - 1-3: Poor lead, might be spam or irrelevant
-- 0: Not a lead at all
+- 0: NOT A CLIENT (developer/competitor, spam, or irrelevant)
 
 Respond ONLY in this JSON format:
 {{"score": <number>, "reason": "<brief explanation>"}}"""
