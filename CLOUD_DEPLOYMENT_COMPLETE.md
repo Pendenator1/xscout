@@ -198,14 +198,14 @@ If you prefer to run everything locally with full control:
 **Windows Task Scheduler:**
 1. Create task: "XScout"
 2. Trigger: Every 1 hour
-3. Action: `python C:\Users\hp\Desktop\XScout\unified_scout.py`
+3. Action: `python C:\Users\hp\Desktop\XScout\xscout.py --single-run`
 
 **Batch File Loop:**
 ```batch
 @echo off
 :loop
 cd C:\Users\hp\Desktop\XScout
-python unified_scout.py
+python xscout.py --single-run
 timeout /t 3600
 goto loop
 ```

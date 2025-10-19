@@ -48,10 +48,10 @@ This runs continuously and checks every 5 minutes.
 ### Run Single Search
 
 ```bash
-python unified_scout.py
+python xscout.py --single-run
 ```
 
-This runs a single Twitter search.
+This runs a single Twitter search (searches last 15 minutes).
 
 ### Run on Schedule (Local)
 
@@ -61,15 +61,15 @@ This runs a single Twitter search.
 3. Set trigger (e.g., every 1 hour)
 4. Action: Start a program
 5. Program: `python`
-6. Arguments: `C:\Users\hp\Desktop\XScout\unified_scout.py`
+6. Arguments: `C:\Users\hp\Desktop\XScout\xscout.py --single-run`
 
 **Or use batch file:**
 
-Create `run_all_scouts.bat`:
+Create `run_single_search.bat`:
 ```batch
 @echo off
 cd C:\Users\hp\Desktop\XScout
-python unified_scout.py
+python xscout.py --single-run
 pause
 ```
 

@@ -28,9 +28,9 @@ Runs continuously, checks every 5 minutes.
 
 ### Single Run
 ```bash
-python unified_scout.py
+python xscout.py --single-run
 ```
-Runs Twitter search once.
+Runs Twitter search once (searches last 15 minutes).
 
 ## ☁️ Deploy to Cloud (FREE)
 
@@ -64,7 +64,7 @@ Runs Twitter search once.
 5. Repeat: **Every 1 hour**
 6. Action: **Start a program**
 7. Program: `python`
-8. Arguments: `C:\Users\hp\Desktop\XScout\unified_scout.py`
+8. Arguments: `C:\Users\hp\Desktop\XScout\xscout.py --single-run`
 9. Start in: `C:\Users\hp\Desktop\XScout`
 
 ### Option 2: Batch File
@@ -73,7 +73,7 @@ Create `run_hourly.bat`:
 ```batch
 @echo off
 :loop
-python C:\Users\hp\Desktop\XScout\unified_scout.py
+python C:\Users\hp\Desktop\XScout\xscout.py --single-run
 timeout /t 3600
 goto loop
 ```
